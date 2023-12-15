@@ -82,38 +82,36 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
     }
 
     function _transact(Proof memory _args, ExtData memory _extData) internal nonReentrant {
-    require(isKnownRoot(_args.root), "Invalid merkle root");
-    for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
-      require(!isSpent(_args.inputNullifiers[i]), "Input is already spent");
-    }
-    require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
-    require(_args.publicAmount == calculatePublicAmount(_extData.extAmount, _extData.fee), "Invalid public amount");
-    require(verifyProof(_args), "Invalid transaction proof");
+        require(isKnownRoot(_args.root), "Invalid merkle root");
+        for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
+            require(!isSpent(_args.inputNullifiers[i]), "Input is already spent");
+        }
+        require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
+        require(_args.publicAmount == calculatePublicAmount(_extData.extAmount, _extData.fee), "Invalid public amount");
+        require(verifyProof(_args), "Invalid transaction proof");
 
-    for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
-      nullifierHashes[_args.inputNullifiers[i]] = true;
-    }
+        for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
+        nullifierHashes[_args.inputNullifiers[i]] = true;
+        }
 
-    if (_extData.extAmount < 0) {
-      require(_extData.recipient != address(0), "Can't withdraw to zero address");
-      if (_extData.isL1Withdrawal) {
-        token.transferAndCall(omniBridge, uint256(-_extData.extAmount), abi.encodePacked(l1Unwrapper, _extData.recipient));
-      } else {
-        token.transfer(_extData.recipient, uint256(-_extData.extAmount));
-      }
-      require(uint256(-_extData.extAmount) >= minimalWithdrawalAmount, "amount is less than minimalWithdrawalAmount"); // prevents ddos attack to Bridge
-    }
-    if (_extData.fee > 0) {
-      token.transfer(_extData.relayer, _extData.fee);
-    }
+        if (_extData.extAmount < 0) {
+            require(_extData.recipient != address(0), "Can't withdraw to zero address");
+            if (_extData.isL1Withdrawal) {
+                token.transferAndCall(omniBridge, uint256(-_extData.extAmount), abi.encodePacked(l1Unwrapper, _extData.recipient));
+            } else {
+                token.transfer(_extData.recipient, uint256(-_extData.extAmount));
+            }
+        }
+        if (_extData.fee > 0) {
+            token.transfer(_extData.relayer, _extData.fee);
+        }
 
-    lastBalance = token.balanceOf(address(this));
-    _insert(_args.outputCommitments[0], _args.outputCommitments[1]);
-    emit NewCommitment(_args.outputCommitments[0], nextIndex - 2, _extData.encryptedOutput1);
-    emit NewCommitment(_args.outputCommitments[1], nextIndex - 1, _extData.encryptedOutput2);
-    for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
-      emit NewNullifier(_args.inputNullifiers[i]);
+        _insert(_args.outputCommitments[0], _args.outputCommitments[1]);
+        emit NewCommitment(_args.outputCommitments[0], nextIndex - 2, _extData.encryptedOutput1);
+        emit NewCommitment(_args.outputCommitments[1], nextIndex - 1, _extData.encryptedOutput2);
+        for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
+            emit NewNullifier(_args.inputNullifiers[i]);
+        }
     }
-  }
 
 }
