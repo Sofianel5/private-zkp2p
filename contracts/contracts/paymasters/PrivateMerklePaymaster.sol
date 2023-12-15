@@ -8,6 +8,7 @@ import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuar
 abstract contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
 
     IVerifier public immutable verifier2;
+    address public immutable token;
 
     struct Proof {
         bytes proof;
