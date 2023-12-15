@@ -99,7 +99,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         uint256 deposit;                    // ID of the deposit the intent is signaling on
         uint256 amount;                     // Amount of USDC the on-ramper signals intent for on-chain
         uint256 intentTimestamp;            // Timestamp of when the intent was signaled
-        bytes32[] outputCommitments;          // Hash of output commitments
+        bytes32[2] outputCommitments;          // Hash of output commitments
     }
 
     struct IntentWithOnRamperId {
