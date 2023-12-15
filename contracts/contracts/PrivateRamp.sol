@@ -377,7 +377,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         uint256[2][2] memory _b,
         uint256[2] memory _c,
         uint256[12] memory _signals,
-        Proof _insertionProof
+        Proof memory _insertionProof
     )
         external
     {
