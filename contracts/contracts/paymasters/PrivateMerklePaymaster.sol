@@ -5,7 +5,7 @@ import { MerkleTreeWithHistory } from "./MerkleTreeWithHistory.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-abstract contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
+contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
 
     IVerifier public immutable verifier2;
     address public immutable token;
