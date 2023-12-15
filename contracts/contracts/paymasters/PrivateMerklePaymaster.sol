@@ -54,9 +54,9 @@ abstract contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGua
         }
     }
 
-    function createDeposit(commitment1, commitment2) {
+    function createDeposit(commitment1, commitment2) internal {
 
     }
 
-    function withdrawDeposit() {}
+    function withdrawDeposit() public {}
 }
