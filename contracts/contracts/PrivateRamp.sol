@@ -169,7 +169,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         address _sustainabilityFeeRecipient,
         IVerifier _verifier2,
         uint32 _levels,
-        address _hasher,
+        address _hasher
     )
         Ownable()
         PrivateMerklePaymaster(_verifier2, _levels, _hasher, _usdc)
