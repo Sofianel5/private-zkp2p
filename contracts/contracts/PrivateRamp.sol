@@ -717,7 +717,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
      * @notice Checks if sustainability fee has been defined, if so sends fee to the fee recipient and intent amount minus fee
      * to the on-ramper. If sustainability fee is undefined then full intent amount is transferred to on-ramper.
      */
-    function _transferFunds(bytes32 _intentHash, Intent memory _intent, Proof _insertionProof) internal {
+    function _transferFunds(bytes32 _intentHash, Intent memory _intent, Proof memory _insertionProof) internal {
         uint256 fee;
         if (sustainabilityFee != 0) {
             fee = (_intent.amount * sustainabilityFee) / PRECISE_UNIT;
