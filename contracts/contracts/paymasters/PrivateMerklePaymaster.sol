@@ -2,7 +2,7 @@
 pragma solidity ^0.8.18;
 
 import { MerkleTreeWithHistory } from "./MerkleTreeWithHistory.sol";
-import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVerifier } from "../interfaces/IVerifier.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 abstract contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
