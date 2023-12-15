@@ -4,11 +4,12 @@ pragma solidity ^0.8.18;
 import { MerkleTreeWithHistory } from "./MerkleTreeWithHistory.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
 
     IVerifier public immutable verifier2;
-    address public immutable token;
+    IERC20 public immutable token;
     mapping(bytes32 => bool) public nullifierHashes;
 
     struct Proof {
