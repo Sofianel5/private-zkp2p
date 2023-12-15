@@ -170,10 +170,9 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         IVerifier _verifier2,
         uint32 _levels,
         address _hasher,
-        address _token
     )
         Ownable()
-        PrivateMerklePaymaster(_verifier2, _levels, _hasher, _token)
+        PrivateMerklePaymaster(_verifier2, _levels, _hasher, _usdc)
     {
         usdc = _usdc;
         poseidon = _poseidon;
