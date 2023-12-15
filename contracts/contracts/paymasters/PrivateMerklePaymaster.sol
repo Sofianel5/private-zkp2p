@@ -71,6 +71,18 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
         }
     }
 
+    function calculatePublicAmount(int256 _extAmount, uint256 _fee) public pure returns (uint256) {
+        require(_fee < MAX_FEE, "Invalid fee");
+        require(_extAmount > -MAX_EXT_AMOUNT && _extAmount < MAX_EXT_AMOUNT, "Invalid ext amount");
+        int256 publicAmount = _extAmount - int256(_fee);
+        return (publicAmount >= 0) ? uint256(publicAmount) : FIELD_SIZE - uint256(-publicAmount);
+    }
+
+    /** @dev whether a note is already spent */
+    function isSpent(bytes32 _nullifierHash) public view returns (bool) {
+        return nullifierHashes[_nullifierHash];
+    }
+
     function transact(Proof memory _args, ExtData memory _extData) public {
         if (_extData.extAmount > 0) {
             // for deposits from L2
