@@ -8,6 +8,7 @@ import { Uint256ArrayUtils } from "./external/Uint256ArrayUtils.sol";
 
 import { IPoseidon } from "./interfaces/IPoseidon.sol";
 import { IRegistrationProcessor } from "./interfaces/IRegistrationProcessor.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
 import { ISendProcessor } from "./interfaces/ISendProcessor.sol";
 import { PrivateMerklePaymaster } from "./paymasters/PrivateMerklePaymaster.sol";
 
@@ -165,9 +166,14 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         uint256 _intentExpirationPeriod,
         uint256 _onRampCooldownPeriod,
         uint256 _sustainabilityFee,
-        address _sustainabilityFeeRecipient
+        address _sustainabilityFeeRecipient,
+        IVerifier _verifier2,
+        uint32 _levels,
+        address _hasher,
+        address _token
     )
         Ownable()
+        PrivateMerklePaymaster(_verifier2, _levels, _hasher, _token)
     {
         usdc = _usdc;
         poseidon = _poseidon;
