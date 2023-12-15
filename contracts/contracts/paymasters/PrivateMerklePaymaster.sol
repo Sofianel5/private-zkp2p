@@ -45,7 +45,7 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
         IVerifier _verifier2,
         uint32 _levels,
         address _hasher,
-        address _token
+        IERC20 _token
     )
         MerkleTreeWithHistory(_levels, _hasher)
     {
