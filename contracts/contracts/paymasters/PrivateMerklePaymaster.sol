@@ -29,7 +29,7 @@ abstract contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGua
         IVerifier _verifier2,
         uint32 _levels,
         address _hasher,
-        address token
+        address _token
     )
         MerkleTreeWithHistory(_levels, _hasher)
     {
@@ -56,7 +56,7 @@ abstract contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGua
         }
     }
 
-    function createDeposit(commitment1, commitment2) internal {
+    function createDeposit(bytes32 commitment1, bytes32 commitment2) internal {
 
     }
 
