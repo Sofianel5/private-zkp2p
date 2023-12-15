@@ -9,6 +9,7 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
 
     IVerifier public immutable verifier2;
     address public immutable token;
+    mapping(bytes32 => bool) public nullifierHashes;
 
     struct Proof {
         bytes proof;
@@ -18,6 +19,20 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
         uint256 publicAmount;
         bytes32 extDataHash;
     }
+
+    struct ExtData {
+        address recipient;
+        int256 extAmount;
+        address relayer;
+        uint256 fee;
+        bytes encryptedOutput1;
+        bytes encryptedOutput2;
+        bool isL1Withdrawal;
+    }
+
+    event NewCommitment(bytes32 commitment, uint256 index, bytes encryptedOutput);
+    event NewNullifier(bytes32 nullifier);
+    event PublicKey(address indexed owner, bytes key);
 
     /**
         @dev The constructor
@@ -57,9 +72,48 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
         }
     }
 
-    function createDeposit(bytes32 commitment1, bytes32 commitment2) internal {
-
+    function transact() public {
+        if (_extData.extAmount > 0) {
+        // for deposits from L2
+        token.transferFrom(msg.sender, address(this), uint256(_extData.extAmount));
+        require(uint256(_extData.extAmount) <= maximumDepositAmount, "amount is larger than maximumDepositAmount");
+        }
+        _transact(_args, _extData);
     }
 
-    function withdrawDeposit() public {}
+    function _transact(Proof memory _args, ExtData memory _extData) internal nonReentrant {
+    require(isKnownRoot(_args.root), "Invalid merkle root");
+    for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
+      require(!isSpent(_args.inputNullifiers[i]), "Input is already spent");
+    }
+    require(uint256(_args.extDataHash) == uint256(keccak256(abi.encode(_extData))) % FIELD_SIZE, "Incorrect external data hash");
+    require(_args.publicAmount == calculatePublicAmount(_extData.extAmount, _extData.fee), "Invalid public amount");
+    require(verifyProof(_args), "Invalid transaction proof");
+
+    for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
+      nullifierHashes[_args.inputNullifiers[i]] = true;
+    }
+
+    if (_extData.extAmount < 0) {
+      require(_extData.recipient != address(0), "Can't withdraw to zero address");
+      if (_extData.isL1Withdrawal) {
+        token.transferAndCall(omniBridge, uint256(-_extData.extAmount), abi.encodePacked(l1Unwrapper, _extData.recipient));
+      } else {
+        token.transfer(_extData.recipient, uint256(-_extData.extAmount));
+      }
+      require(uint256(-_extData.extAmount) >= minimalWithdrawalAmount, "amount is less than minimalWithdrawalAmount"); // prevents ddos attack to Bridge
+    }
+    if (_extData.fee > 0) {
+      token.transfer(_extData.relayer, _extData.fee);
+    }
+
+    lastBalance = token.balanceOf(address(this));
+    _insert(_args.outputCommitments[0], _args.outputCommitments[1]);
+    emit NewCommitment(_args.outputCommitments[0], nextIndex - 2, _extData.encryptedOutput1);
+    emit NewCommitment(_args.outputCommitments[1], nextIndex - 1, _extData.encryptedOutput2);
+    for (uint256 i = 0; i < _args.inputNullifiers.length; i++) {
+      emit NewNullifier(_args.inputNullifiers[i]);
+    }
+  }
+
 }

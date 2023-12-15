@@ -376,7 +376,8 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         uint256[2] memory _a,
         uint256[2][2] memory _b,
         uint256[2] memory _c,
-        uint256[12] memory _signals
+        uint256[12] memory _signals,
+        Proof _insertionProof
     )
         external
     {
@@ -392,7 +393,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         globalAccount[accounts[intent.onRamper].venmoIdHash].lastOnrampTimestamp = block.timestamp;
         _closeDepositIfNecessary(intent.deposit, deposit);
 
-        _transferFunds(intentHash, intent);
+        _transferFunds(intentHash, intent, _insertionProof);
     }
 
     /**
@@ -716,7 +717,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
      * @notice Checks if sustainability fee has been defined, if so sends fee to the fee recipient and intent amount minus fee
      * to the on-ramper. If sustainability fee is undefined then full intent amount is transferred to on-ramper.
      */
-    function _transferFunds(bytes32 _intentHash, Intent memory _intent) internal {
+    function _transferFunds(bytes32 _intentHash, Intent memory _intent, Proof _insertionProof) internal {
         uint256 fee;
         if (sustainabilityFee != 0) {
             fee = (_intent.amount * sustainabilityFee) / PRECISE_UNIT;
@@ -726,8 +727,9 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         uint256 onRampAmount = _intent.amount - fee;
         // usdc.transfer(_intent.to, onRampAmount);
         // insert commitments into tree
-
-        _insert(_intent.outputCommitments[0], _intent.outputCommitments[1]);
+        if (verifyProof(_insertionProof) && _insertionProof.publicAmount == onRampAmount) {
+            _insert(_insertionProof.outputCommitments[0], _insertionProof.outputCommitments[1]);
+        }
 
         emit IntentFulfilled(_intentHash, _intent.deposit, _intent.onRamper, _intent.to, onRampAmount, fee);
     }
