@@ -27,7 +27,6 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
         uint256 fee;
         bytes encryptedOutput1;
         bytes encryptedOutput2;
-        bool isL1Withdrawal;
     }
 
     event NewCommitment(bytes32 commitment, uint256 index, bytes encryptedOutput);
@@ -72,11 +71,10 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
         }
     }
 
-    function transact() public {
+    function transact(Proof memory _args, ExtData memory _extData) public {
         if (_extData.extAmount > 0) {
-        // for deposits from L2
-        token.transferFrom(msg.sender, address(this), uint256(_extData.extAmount));
-        require(uint256(_extData.extAmount) <= maximumDepositAmount, "amount is larger than maximumDepositAmount");
+            // for deposits from L2
+            token.transferFrom(msg.sender, address(this), uint256(_extData.extAmount));
         }
         _transact(_args, _extData);
     }
@@ -96,11 +94,7 @@ contract PrivateMerklePaymaster is MerkleTreeWithHistory, ReentrancyGuard {
 
         if (_extData.extAmount < 0) {
             require(_extData.recipient != address(0), "Can't withdraw to zero address");
-            if (_extData.isL1Withdrawal) {
-                token.transferAndCall(omniBridge, uint256(-_extData.extAmount), abi.encodePacked(l1Unwrapper, _extData.recipient));
-            } else {
-                token.transfer(_extData.recipient, uint256(-_extData.extAmount));
-            }
+            token.transfer(_extData.recipient, uint256(-_extData.extAmount));
         }
         if (_extData.fee > 0) {
             token.transfer(_extData.relayer, _extData.fee);
