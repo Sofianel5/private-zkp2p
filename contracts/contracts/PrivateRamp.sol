@@ -720,7 +720,7 @@ contract PrivateRamp is Ownable, PrivateMerklePaymaster {
         uint256 onRampAmount = _intent.amount - fee;
         // usdc.transfer(_intent.to, onRampAmount);
         // insert commitments into tree
-        _insert(_intent.outputCommitments[0], _intent.outputCommitments[1])
+        _insert(_intent.outputCommitments[0], _intent.outputCommitments[1]);
 
         emit IntentFulfilled(_intentHash, _intent.deposit, _intent.onRamper, _intent.to, onRampAmount, fee);
     }
